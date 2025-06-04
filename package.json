@@ -1,0 +1,24 @@
+{
+  "name": "penpot-plugin",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^5.4.19"
+  },
+  "description": "📁 root/\r ├── penpot_plugin/                  # 📦 Penpot Plugin\r │   ├── index.html                  # UI interface (theme selector, node type dropdown)\r │   ├── plugin.js                   # JS logic for export, mapping, signal\r     |- manifest.json               # Penpot plugin metadata + access scopes\r │   ├── style.css                   # Optional custom CSS styling\r |   |--utils/                       # Helper scripts (e.g., mapping to Godot)\r        |-anchorMapper.js\r        |-nodeTypeMapper.js\r │   ├── presets/                    # Saved theme styles as JSON\r │   │   ├── dark_ui.json\r          |- flat_ui.json\r │   │   ├── retro_theme.json\r │   │   └── default_theme.json\r │   ├── assets/                     # Icons, plugin branding\r │   │   └── icon.svg\r │   └── README.md\r 📁 godot_project/\r ├── addons/\r │   └── sound_system_builder/      # 📦 Godot Plugin Core\r │       ├── SoundSystemBuilderPlugin.gd  # Plugin registration + dock\r │       ├── plugin.cfg                  # Plugin declaration for Godot\r │       ├── autoload/\r │       │   └── AudioPluginBus.gd       # Global audio signal bus\r │       ├── logic/                      # 🔧 Functional scripts\r │       │   ├── NodeGenerator.gd        # Builds UI nodes from config\r │       │   ├── MetadataManager.gd      # Handles tags, name metadata\r │       │   ├── VariationManager.gd     # Sound variations (random pitch, volume)\r │       │   ├── AudioBusManager.gd      # Auto-assigns buses from project\r │       │   ├── RayFXManager.gd         # For spatial/directional audio\r │       │   └── SoundManager.gd         # Add/remove/track imported sounds\r │       ├── ui/                         # 🧩 UI Scenes\r │       │   ├── SoundSystemPanel.tscn   # Main plugin panel\r │       │   ├── MetadataEditor.tscn     # Edit sound tags/names\r │       │   ├── PlaybackSettings.tscn   # Set looping, pitch, fade, etc.\r │       │   ├── SpatialOptions.tscn     # Ray/audio detection options\r │       │   └── SoundManagerPanel.tscn  # View, update, remove sounds\r │       ├── assets/\r │       │   ├── icons/\r │       │   └── audio_samples/\r │       ├── themes/\r │       │   └── SoundSystemTheme.tres   # Default visual theme override\r │       ├── data/\r │       │   ├── tag_presets.json\r │       │   ├── sound_registry.json\r │       │   └── floor_fx_profiles.json\r │       ├── default_presets/            # Optional: default sound types, mixer templates\r │       └── tests/\r │           └── test_sound_node_generation.tscn",
+  "main": "vite.config.js",
+  "dependencies": {
+    "esbuild": "^0.21.5",
+    "nanoid": "^3.3.11",
+    "picocolors": "^1.1.1",
+    "postcss": "^8.5.4",
+    "rollup": "^4.41.1",
+    "source-map-js": "^1.2.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

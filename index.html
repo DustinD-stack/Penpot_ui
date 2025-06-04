@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penpot to Godot Exporter</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; }
+    button { margin-top: 10px; }
+    select, input { width: 100%; margin-top: 5px; }
+    #layerConfig { margin-top: 20px; }
+  </style>
+</head>
+<body>
+    <div id="layerConfig"></div>
+
+  <h3>🎮 Penpot → Godot Export</h3>
+
+  <label for="frameSelect">Select Frame</label>
+  <select id="frameSelect" title="Select Frame"></select>
+
+  <button id="exportBtn" type="button">Export to JSON</button>
+
+ <script type="module">
+  import { exportToJSON } from './jsonFormatter.js';
+
+  const frameSelect = document.getElementById('frameSelect');
+  const exportBtn = document.getElementById('exportBtn');
+  const layerConfig = document.getElementById('layerConfig');
+
+  let selectedFrame = null;
+
+  const godotTypes = ["Control", "Button", "Label", "TextureRect", "ColorRect"];
+
+  async function loadFrames() {
+    try {
+      const frames = await window.penpot.plugin.getFrames();
+      console.debug("[PluginUI] Fetched frames:", frames);
+      frameSelect.innerHTML = ""; // Clear previous options
+      if (frames.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.innerText = "No frames found";
+        frameSelect.appendChild(opt);
+        layerConfig.innerHTML = "";
+        return;
+      }
+      for (let frame of frames) {
+        const opt = document.createElement("option");
+        opt.value = frame.id;
+        opt.innerText = frame.name;
+        frameSelect.appendChild(opt);
+      }
+      // Select first frame by default
+      frameSelect.selectedIndex = 0;
+      await loadFrameById(frames[0].id);
+    } catch (err) {
+      alert("Failed to load frames.");
+      console.error(err);
+    }
+  }
+
+  async function loadFrameById(id) {
+    try {
+      selectedFrame = await window.penpot.plugin.getFrameById(id);
+      console.debug("[PluginUI] Loaded frame:", selectedFrame);
+      showLayerTypeSelectors(selectedFrame.layers || []);
+    } catch (err) {
+      alert("Failed to load frame.");
+      console.error(err);
+    }
+  }
+
+  frameSelect.addEventListener("change", async () => {
+    const id = frameSelect.value;
+    if (id) await loadFrameById(id);
+  });
+
+  function showLayerTypeSelectors(layers) {
+    if (!layers.length) {
+      layerConfig.innerHTML = "<h4>No layers to configure.</h4>";
+      return;
+    }
+    layerConfig.innerHTML = "<h4>Assign Godot Types</h4>";
+    layers.forEach((layer, index) => {
+      const label = document.createElement("label");
+      label.innerText = layer.name || `Layer ${index}`;
+
+      const select = document.createElement("select");
+      select.dataset.layerId = layer.id;
+
+      godotTypes.forEach(type => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.text = type;
+        select.appendChild(option);
+      });
+
+      const wrapper = document.createElement("div");
+      wrapper.style.marginTop = "8px";
+      wrapper.appendChild(label);
+      wrapper.appendChild(select);
+      layerConfig.appendChild(wrapper);
+
+      console.debug(`[PluginUI] Layer ${layer.name} selector created`);
+    });
+  }
+
+  exportBtn.addEventListener("click", () => {
+    if (!selectedFrame) return alert("Select a frame first.");
+    if (!selectedFrame.layers || !selectedFrame.layers.length) return alert("No layers to export.");
+
+    selectedFrame.layers.forEach(layer => {
+      const selector = document.querySelector(`select[data-layer-id="${layer.id}"]`);
+      if (selector) {
+        layer.role = selector.value;
+        console.debug(`[PluginUI] Assigned ${layer.name} → ${selector.value}`);
+      }
+    });
+
+    const json = exportToJSON(selectedFrame);
+    download("penpot_ui_export.json", json);
+  });
+
+  function download(filename, text) {
+    const blob = new Blob([text], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  // Initial load
+  loadFrames();
+</script>
+</body>
+</html>
