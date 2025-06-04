@@ -1,19 +1,11 @@
 {
-  "id": "penpot-godot-exporter",
-  "name": "Penpot to Godot UI Converter",
-  "description": "Export UI frames from Penpot into structured JSON for Godot.",
+  "name": "Penpot → Godot Exporter",
+  "description": "Export Penpot UI designs to Godot JSON scenes.",
   "code": "/plugin.js",
-  "entry": "index.html",
   "icon": "/icon.png",
-  "version": "1.0.0",
   "permissions": [
     "content:read",
-    "content:write",
-    "library:read",
-    "library:write",
     "user:read",
-    "comment:read",
-    "comment:write",
     "allow:downloads"
   ]
 }
