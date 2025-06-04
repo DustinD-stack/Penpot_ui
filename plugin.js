@@ -1,5 +1,5 @@
 // Open the plugin UI panel in Penpot
-penpot.ui.open("Penpot to Godot Exporter", "", {
+penpot.ui.open("Penpot to Godot Exporter", "/index.html", {
   width: 500,
   height: 600
 });
