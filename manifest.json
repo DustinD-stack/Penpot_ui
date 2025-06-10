@@ -5,12 +5,14 @@
   "name": "Dustin Douglas",
   "email": "Dustin.C.Douglas1@gmail.com"
   },
-  "code": "/plugin.js",
-  "icon": "/icon.PNG",
+  "code": "plugin.js",
+  "icon": "icon.PNG",
   "permissions": [
     "content:read",
     "library:read",
     "user:read",
-    "allow:downloads"
+    "allow:downloads",
+    "content:write",
+    "library:write"
   ]
 }
