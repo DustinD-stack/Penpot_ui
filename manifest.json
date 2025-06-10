@@ -1,10 +1,15 @@
 {
-  "name": "Penpot → Godot Exporter",
-  "description": "Export Penpot UI designs to Godot JSON scenes.",
+  "name": "Penpot to Godot UI Converter",
+  "description": "Exports UI layouts from Penpot for import into Godot Engine",
+  "author": {
+  "name": "Dustin Douglas",
+  "email": "Dustin.C.Douglas1@gmail.com"
+  },
   "code": "/plugin.js",
-  "icon": "/icon.png",
+  "icon": "/icon.PNG",
   "permissions": [
     "content:read",
+    "library:read",
     "user:read",
     "allow:downloads"
   ]

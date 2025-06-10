@@ -1,137 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Penpot to Godot Exporter</title>
-  <style>
-    body { font-family: sans-serif; padding: 10px; }
-    button { margin-top: 10px; }
-    select, input { width: 100%; margin-top: 5px; }
-    #layerConfig { margin-top: 20px; }
-  </style>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penpot to Godot UI Export</title>
+  <!-- Include Penpot plugin styles for consistent UI appearance -->
+<link rel="stylesheet" href="https://unpkg.com/@penpot/plugin-styles/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div id="layerConfig"></div>
-
-  <h3>🎮 Penpot → Godot Export</h3>
-
-  <label for="frameSelect">Select Frame</label>
-  <select id="frameSelect" title="Select Frame"></select>
-
-  <button id="exportBtn" type="button">Export to JSON</button>
-
- <script type="module">
-  import { exportToJSON } from './jsonFormatter.js';
-
-  const frameSelect = document.getElementById('frameSelect');
-  const exportBtn = document.getElementById('exportBtn');
-  const layerConfig = document.getElementById('layerConfig');
-
-  let selectedFrame = null;
-
-  const godotTypes = ["Control", "Button", "Label", "TextureRect", "ColorRect"];
-
-  async function loadFrames() {
-    try {
-      const frames = await window.penpot.plugin.getFrames();
-      console.debug("[PluginUI] Fetched frames:", frames);
-      frameSelect.innerHTML = ""; // Clear previous options
-      if (frames.length === 0) {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.innerText = "No frames found";
-        frameSelect.appendChild(opt);
-        layerConfig.innerHTML = "";
-        return;
-      }
-      for (let frame of frames) {
-        const opt = document.createElement("option");
-        opt.value = frame.id;
-        opt.innerText = frame.name;
-        frameSelect.appendChild(opt);
-      }
-      // Select first frame by default
-      frameSelect.selectedIndex = 0;
-      await loadFrameById(frames[0].id);
-    } catch (err) {
-      alert("Failed to load frames.");
-      console.error(err);
-    }
-  }
-
-  async function loadFrameById(id) {
-    try {
-      selectedFrame = await window.penpot.plugin.getFrameById(id);
-      console.debug("[PluginUI] Loaded frame:", selectedFrame);
-      showLayerTypeSelectors(selectedFrame.layers || []);
-    } catch (err) {
-      alert("Failed to load frame.");
-      console.error(err);
-    }
-  }
-
-  frameSelect.addEventListener("change", async () => {
-    const id = frameSelect.value;
-    if (id) await loadFrameById(id);
-  });
-
-  function showLayerTypeSelectors(layers) {
-    if (!layers.length) {
-      layerConfig.innerHTML = "<h4>No layers to configure.</h4>";
+  <div class="container">
+    <h2>Penpot → Godot UI Exporter</h2>
+    <p>Export your Penpot design to JSON for Godot.</p>
+ 
+    <!-- Export scope selection -->
+    <label for="exportScope"><strong>Select export scope:</strong></label>
+    <select id="exportScope">
+      <option value="board">Current Board</option>
+      <option value="page">Whole Page</option>
+      <option value="project">Entire Project</option>
+    </select>
+ 
+    <!-- Options -->
+    <div>
+<label><input type="checkbox" id="includeImages" checked> Include images</label><br/>
+      <label><input type="checkbox" id="includeDebugOption"> Include debug info</label>
+      <label><input type="checkbox" id="includeDebug"> Include debug info</label>
+      <span title="If enabled, include extra debug data (like outlines) in the JSON." class="help-icon"></span>
+    </div>
+ 
+    <!-- Export button -->
+    <button id="exportBtn"><strong>Export to Godot JSON</strong></button>
+ 
+    <!-- Message area -->
+    <pre id="status"></pre>
+  </div>
+ 
+  <!-- Include helper scripts for JSON formatting:
+       jsonFormatterHelper.js provides utility functions for JSON manipulation,
+       jsonFormatter.js handles the actual formatting of JSON data. -->
+  <script src="jsonFormatterHelper.js"></script>
+  <script src="jsonFormatter.js"></script>
+  <script>
+ 
+    // index.html script for handling UI events and messaging
+    const exportBtn = document.getElementById('exportBtn');
+    const statusPre = document.getElementById('status');
+    exportBtn.onclick = () => {
+      statusPre.textContent = " Export in progress...";
+      const scope = document.getElementById('exportScope').value;
+      const includeImages = document.getElementById('includeImages').checked;
+      const includeDebug = document.getElementById('includeDebug').checked;
+      
+      // Send a message to the Penpot plugin code to initiate export
+        const message = { type: 'EXPORT', scope: scope, images: includeImages };
+        parent.postMessage(message, '*'); // Send message to plugin.js context
+      };
+ 
+ // Listen for messages from the plugin (e.g., export result or errors)
+ window.addEventListener('message', event => {
+   const msg = event.data;
+   if (msg.type === 'EXPORT_RESULT') {
+ 
+    // Provide download link for JSON (and possibly images zip)
+    const jsonData = msg.json;
+    const fileName = msg.fileName || 'penpot_export.json';
+ 
+    if (typeof JSONFormatter !== 'undefined' && typeof JSONFormatter.format === 'function') {
+      const formatted = JSONFormatter.format(jsonData);
+    } else {
+      statusPre.textContent = " Error: JSONFormatter is not available.";
       return;
     }
-    layerConfig.innerHTML = "<h4>Assign Godot Types</h4>";
-    layers.forEach((layer, index) => {
-      const label = document.createElement("label");
-      label.innerText = layer.name || `Layer ${index}`;
-
-      const select = document.createElement("select");
-      select.dataset.layerId = layer.id;
-
-      godotTypes.forEach(type => {
-        const option = document.createElement("option");
-        option.value = type;
-        option.text = type;
-        select.appendChild(option);
-      });
-
-      const wrapper = document.createElement("div");
-      wrapper.style.marginTop = "8px";
-      wrapper.appendChild(label);
-      wrapper.appendChild(select);
-      layerConfig.appendChild(wrapper);
-
-      console.debug(`[PluginUI] Layer ${layer.name} selector created`);
-    });
+    const blob = new Blob([formatted], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    document.body.removeChild(link);
+    const link = document.createElement('a');
+    link.href = url;
+    setTimeout(() => URL.revokeObjectURL(url), 1000); // Delay revocation by 1 second
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    document.body.removeChild(link);
+  } else if (msg.type === 'ERROR') {
+    statusPre.textContent = `An error occurred during export: ${msg.error}`;
   }
-
-  exportBtn.addEventListener("click", () => {
-    if (!selectedFrame) return alert("Select a frame first.");
-    if (!selectedFrame.layers || !selectedFrame.layers.length) return alert("No layers to export.");
-
-    selectedFrame.layers.forEach(layer => {
-      const selector = document.querySelector(`select[data-layer-id="${layer.id}"]`);
-      if (selector) {
-        layer.role = selector.value;
-        console.debug(`[PluginUI] Assigned ${layer.name} → ${selector.value}`);
-      }
-    });
-
-    const json = exportToJSON(selectedFrame);
-    download("penpot_ui_export.json", json);
-  });
-
-  function download(filename, text) {
-    const blob = new Blob([text], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-  }
-
-  // Initial load
-  loadFrames();
-</script>
+ });
+  </script>
 </body>
 </html>
