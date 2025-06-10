@@ -72,6 +72,17 @@ fileName }, '*');
   }
 });
  
+// Listen for messages from Penpot
+window.addEventListener("message", (event) => {
+  // Handle incoming messages from Penpot
+  console.log("Received from Penpot:", event.data);
+});
+
+// Send a message back to Penpot
+function sendMessageToPenpot(data) {
+  parent.postMessage(data, "*");
+}
+
 // Utility function: exportBoard - exports a single board (artboard) and its layers to JSON
 async function exportBoard(board) {
   const boardData = {
